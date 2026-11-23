@@ -17,6 +17,13 @@ final class MenuRequestReceiver: NSObject, NSApplicationDelegate {
         }
         do { try watchFinderRequests() }
         catch { MenuActions.report(error) }
+        // Launched without the settings window (e.g. by the Finder extension): keep the Dock icon hidden.
+        DispatchQueue.main.async {
+            let hide = UserDefaults.standard.object(forKey: SettingsRootView.hideDockIconKey) as? Bool ?? true
+            if hide, !NSApp.windows.contains(where: { $0.isVisible && $0.canBecomeMain }) {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

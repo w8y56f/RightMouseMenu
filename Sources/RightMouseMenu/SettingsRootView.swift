@@ -23,6 +23,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
 
 struct SettingsRootView: View {
     @AppStorage("appearance") private var appearance = "System"
+    @AppStorage(SettingsRootView.hideDockIconKey) private var hideDockIcon = true
     @Binding var language: String
     @State private var loginStatus = SMAppService.mainApp.status
     @State private var loginError: String?
@@ -61,6 +62,14 @@ struct SettingsRootView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .navigationTitle(localized(selection.title))
+        // The Dock icon shows only while this window is open, unless the user turns that off.
+        .onAppear {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate()
+        }
+        .onDisappear {
+            if hideDockIcon { NSApp.setActivationPolicy(.accessory) }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             loginStatus = SMAppService.mainApp.status
         }
@@ -77,6 +86,8 @@ struct SettingsRootView: View {
         return "\(version) (\(revision))"
     }
 
+    static let hideDockIconKey = "hideDockIconWhenClosed"
+
     private static func apply(_ appearance: String) {
         NSApp.appearance = switch appearance {
         case "Dark": NSAppearance(named: .darkAqua)
@@ -90,6 +101,8 @@ struct SettingsRootView: View {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 88, height: 88)
             Text(RightMouseMenuApp.displayName).font(.largeTitle.bold())
             Text(String(format: localized("Version %@"), versionDescription)).foregroundStyle(.secondary)
+            // Tells the development (.dev) and installed copies apart when both are open.
+            Text(Bundle.main.bundleIdentifier ?? "").font(.callout.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
             Text(localized("Powered by Stone Wang")).padding(.top, 8)
             Spacer()
         }.frame(maxWidth: .infinity, alignment: .leading)
@@ -114,6 +127,7 @@ struct SettingsRootView: View {
                 }
                 if let loginError { Text(loginError).foregroundStyle(.red) }
                 Picker(localized("Appearance"), selection: $appearance) { Text(localized("System")).tag("System"); Text(localized("Light")).tag("Light"); Text(localized("Dark")).tag("Dark") }
+                Toggle(localized("Hide Dock icon when the window is closed"), isOn: $hideDockIcon)
                 Picker(localized("Language"), selection: $language) { Text(localized("System")).tag("System"); Text(localized("English")).tag("English"); Text(localized("中文")).tag("中文") }
             }
             Section { Label(localized("RightMouseMenu stays available from the menu bar."), systemImage: "menubar.rectangle").foregroundStyle(.secondary) }

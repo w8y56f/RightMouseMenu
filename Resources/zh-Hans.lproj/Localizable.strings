@@ -88,3 +88,4 @@
 "Used by New Terminal here" = "用于「在此新建 Terminal 窗口」";
 "Used by New iTerm2 here and New iTerm2 Tab here" = "用于「在此新建 iTerm2 窗口/标签页」";
 "macOS asks once for each app. New Terminal Tab here, Tabby, Visual Studio Code and Copy Full Path need no permission." = "macOS 会为每个应用单独询问一次。新建 Terminal 标签页、Tabby、Visual Studio Code 和复制完整路径不需要权限。";
+"Hide Dock icon when the window is closed" = "关闭窗口后隐藏程序坞图标";

@@ -32,6 +32,9 @@ revision=$(/usr/libexec/PlistBuddy -c "Print :GitRevision" "$plist" 2>/dev/null 
 echo "Version $version ($revision), architectures: $app_archs" >&2
 
 codesign --verify --deep --strict "$app"
+# Building registers this copy's extension with PlugInKit, where it would compete with an installed copy
+# that has the same identifier. Only the installed app should provide the Release extension.
+pluginkit -r "$appex" || true
 
 stage="$out/dmg-stage"
 mkdir -p "$stage"
