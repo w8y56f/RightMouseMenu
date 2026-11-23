@@ -55,9 +55,6 @@
 "Version %@" = "版本 %@";
 "New Tabby Tab here" = "在此新建 Tabby 标签页";
 "Tabby’s command line opens a tab in an existing window." = "Tabby 的命令行会在已有窗口中打开标签页。";
-"File Information uses Finder automation." = "文件信息需要 Finder 自动化权限。";
-"Request Finder Automation" = "请求 Finder 自动化权限";
-"Finder Automation Enabled" = "Finder 自动化已启用";
 "Allow RightMouseMenu in System Settings → Privacy & Security → Accessibility, then try again." = "请在系统设置 → 隐私与安全性 → 辅助功能中允许 RightMouseMenu，然后重试。";
 "Allow RightMouseMenu to control the requested app in System Settings → Privacy & Security → Automation, then try again." = "请在系统设置 → 隐私与安全性 → 自动化中允许 RightMouseMenu 控制目标应用，然后重试。";
 "The selected application is not installed." = "所选应用尚未安装。";
@@ -78,4 +75,16 @@
 "Collapse" = "收起";
 "Drag to reorder" = "拖动以调整顺序";
 "Restore Default Order" = "恢复默认顺序";
-"Restore Default Order and Switch States" = "恢复默认顺序和开关状态";
+"Restore All" = "全部恢复默认";
+"Show as submenu" = "以子菜单显示";
+"New File Items" = "新建文件项";
+"Finder limitation: clicking the New File item itself closes the whole menu. Hover over it to open the submenu. Finder Sync extensions cannot prevent this, even on macOS 26." = "Finder 限制：直接点击「新建文件」这一项会关闭整个菜单，悬停即可展开子菜单。Finder Sync 扩展无法阻止这一点，macOS 26 也一样。";
+"Automation" = "自动化";
+"Allowed" = "已允许";
+"Denied" = "已拒绝";
+"Asks on first use" = "首次使用时询问";
+"Request" = "请求权限";
+"Used by File Information" = "用于「文件信息」";
+"Used by New Terminal here" = "用于「在此新建 Terminal 窗口」";
+"Used by New iTerm2 here and New iTerm2 Tab here" = "用于「在此新建 iTerm2 窗口/标签页」";
+"macOS asks once for each app. New Terminal Tab here, Tabby, Visual Studio Code and Copy Full Path need no permission." = "macOS 会为每个应用单独询问一次。新建 Terminal 标签页、Tabby、Visual Studio Code 和复制完整路径不需要权限。";

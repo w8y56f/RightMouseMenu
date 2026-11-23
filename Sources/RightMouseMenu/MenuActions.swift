@@ -83,8 +83,8 @@ enum MenuActions {
         }
     }
 
-    static func finderAutomationStatus(prompt: Bool) -> OSStatus {
-        let target = NSAppleEventDescriptor(bundleIdentifier: "com.apple.finder")
+    static func automationStatus(_ bundleID: String, prompt: Bool) -> OSStatus {
+        let target = NSAppleEventDescriptor(bundleIdentifier: bundleID)
         return AEDeterminePermissionToAutomateTarget(target.aeDesc, typeWildCard, typeWildCard, prompt)
     }
 

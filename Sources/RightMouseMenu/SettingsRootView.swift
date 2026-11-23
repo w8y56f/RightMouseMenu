@@ -27,7 +27,7 @@ struct SettingsRootView: View {
     @State private var loginStatus = SMAppService.mainApp.status
     @State private var loginError: String?
     @State private var extensionEnabled: Bool?
-    @State private var automationStatus: OSStatus?
+    @State private var automationStatus: [String: OSStatus] = [:]
     @State private var selection: SettingsTab = .general
 
     private func localized(_ key: String) -> String {
@@ -64,15 +64,32 @@ struct SettingsRootView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             loginStatus = SMAppService.mainApp.status
         }
-        .preferredColorScheme(appearance == "System" ? nil : (appearance == "Dark" ? .dark : .light))
+        // preferredColorScheme(nil) does not fully restore the system appearance after an explicit one.
+        .onAppear { Self.apply(appearance) }
+        .onChange(of: appearance) { _, value in Self.apply(value) }
         .environment(\.locale, language == "中文" ? Locale(identifier: "zh-Hans") : language == "English" ? Locale(identifier: "en") : .current)
+    }
+
+    /// "0.1.0 (abc1234)", or "0.1.0 (abc1234 - dirty)" when built from uncommitted changes.
+    private var versionDescription: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
+        guard let revision = Bundle.main.object(forInfoDictionaryKey: "GitRevision") as? String, !revision.isEmpty else { return version }
+        return "\(version) (\(revision))"
+    }
+
+    private static func apply(_ appearance: String) {
+        NSApp.appearance = switch appearance {
+        case "Dark": NSAppearance(named: .darkAqua)
+        case "Light": NSAppearance(named: .aqua)
+        default: nil
+        }
     }
 
     private var about: some View {
         VStack(alignment: .leading, spacing: 12) {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 88, height: 88)
             Text(localized("RightMouseMenu")).font(.largeTitle.bold())
-            Text(String(format: localized("Version %@"), Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0")).foregroundStyle(.secondary)
+            Text(String(format: localized("Version %@"), versionDescription)).foregroundStyle(.secondary)
             Text(localized("Powered by Stone Wang")).padding(.top, 8)
             Spacer()
         }.frame(maxWidth: .infinity, alignment: .leading)
@@ -103,44 +120,97 @@ struct SettingsRootView: View {
         }.formStyle(.grouped)
     }
 
+    private struct AutomationTarget {
+        let bundleID: String
+        let name: String
+        let purpose: String
+    }
+
+    private static let automationTargets = [
+        AutomationTarget(bundleID: "com.apple.finder", name: "Finder", purpose: "Used by File Information"),
+        AutomationTarget(bundleID: "com.apple.Terminal", name: "Terminal", purpose: "Used by New Terminal here"),
+        AutomationTarget(bundleID: "com.googlecode.iterm2", name: "iTerm2", purpose: "Used by New iTerm2 here and New iTerm2 Tab here"),
+    ]
+
+    private var installedAutomationTargets: [AutomationTarget] {
+        Self.automationTargets.filter { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0.bundleID) != nil }
+    }
+
     private var permissions: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(localized("Finder Extension")).font(.title2.bold())
-                Text(localized("Finder extensions are enabled in System Settings → General → Login Items & Extensions → Finder. Enable RightMouseMenu there to show its contextual commands."))
-                if let extensionEnabled {
-                    Label(localized(extensionEnabled ? "Enabled" : "Disabled"), systemImage: extensionEnabled ? "checkmark.circle.fill" : "exclamationmark.circle")
-                        .foregroundStyle(extensionEnabled ? Color.green : Color.secondary)
-                } else {
-                    ProgressView().controlSize(.small)
-                }
-                Button(localized("Open Login Items & Extensions")) { FIFinderSyncController.showExtensionManagementInterface() }
-                    .buttonStyle(.borderedProminent)
-                    .tint(extensionEnabled == true ? .green : .accentColor)
-                Divider()
-                Text(localized("File Information uses Finder automation."))
+        Form {
+            Section {
                 HStack {
-                    if automationStatus == noErr {
-                        Label(localized("Finder Automation Enabled"), systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
+                    if let extensionEnabled {
+                        Label(localized(extensionEnabled ? "Enabled" : "Disabled"), systemImage: extensionEnabled ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                            .foregroundStyle(extensionEnabled ? Color.green : Color.orange)
                     } else {
-                        Button(localized("Request Finder Automation")) {
-                            Task {
-                                automationStatus = await Task.detached { MenuActions.finderAutomationStatus(prompt: true) }.value
-                                if automationStatus == OSStatus(errAEEventNotPermitted) { openPrivacySettings("Automation") }
-                            }
-                        }
+                        ProgressView().controlSize(.small)
                     }
+                    Spacer()
+                    Button(localized("Open Login Items & Extensions")) { FIFinderSyncController.showExtensionManagementInterface() }
+                }
+            } header: {
+                Text(localized("Finder Extension"))
+            } footer: {
+                Text(localized("Finder extensions are enabled in System Settings → General → Login Items & Extensions → Finder. Enable RightMouseMenu there to show its contextual commands."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                ForEach(installedAutomationTargets, id: \.bundleID) { target in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(target.name)
+                            Text(localized(target.purpose)).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        automationState(for: target)
+                    }
+                }
+                HStack {
+                    Spacer()
                     Button(localized("Open Automation Settings")) { openPrivacySettings("Automation") }
                 }
+            } header: {
+                Text(localized("Automation"))
+            } footer: {
+                Text(localized("macOS asks once for each app. New Terminal Tab here, Tabby, Visual Studio Code and Copy Full Path need no permission."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .formStyle(.grouped)
         .task {
             while !Task.isCancelled {
                 extensionEnabled = await Task.detached { Self.finderExtensionEnabled() }.value
-                automationStatus = await Task.detached { MenuActions.finderAutomationStatus(prompt: false) }.value
+                for target in Self.automationTargets {
+                    let id = target.bundleID
+                    automationStatus[id] = await Task.detached { MenuActions.automationStatus(id, prompt: false) }.value
+                }
                 try? await Task.sleep(for: .seconds(2))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func automationState(for target: AutomationTarget) -> some View {
+        switch automationStatus[target.bundleID] {
+        case .none:
+            ProgressView().controlSize(.small)
+        case noErr:
+            Label(localized("Allowed"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+        case OSStatus(errAEEventNotPermitted):
+            Label(localized("Denied"), systemImage: "xmark.circle.fill").foregroundStyle(.red)
+        case OSStatus(procNotFound):
+            // macOS can only check or ask while the target app is running.
+            Text(localized("Asks on first use")).foregroundStyle(.secondary)
+        default:
+            Button(localized("Request")) {
+                let id = target.bundleID
+                Task {
+                    automationStatus[id] = await Task.detached { MenuActions.automationStatus(id, prompt: true) }.value
+                }
             }
         }
     }
@@ -185,6 +255,7 @@ struct ContextMenuSettingsView: View {
     @AppStorage("newFile.word", store: SharedSettings.defaults) private var word = true
     @AppStorage("newFile.excel", store: SharedSettings.defaults) private var excel = true
     @AppStorage("newFile.ppt", store: SharedSettings.defaults) private var ppt = true
+    @AppStorage("newFileSubmenu", store: SharedSettings.defaults) private var submenu = false
 
     @AppStorage(ContextCommand.orderKey, store: SharedSettings.defaults) private var order = ""
     @State private var showsFileTypes = false
@@ -210,9 +281,13 @@ struct ContextMenuSettingsView: View {
         Form {
             let commands = ContextCommand.ordered(order)
             Section {
-                Toggle(localized("Show icons"), isOn: $icons)
-                    .toggleStyle(.switch)
-                    .fixedSize()
+                HStack {
+                    Text(localized("Show icons"))
+                    Spacer()
+                    Toggle(localized("Show icons"), isOn: $icons)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                }
             }
             Section {
                 ForEach(commands, id: \.self) { command in
@@ -233,13 +308,27 @@ struct ContextMenuSettingsView: View {
                         }
                         if command == .newFile && showsFileTypes {
                             VStack(alignment: .leading, spacing: 10) {
-                                Toggle(localized("Plain Text (.txt)"), isOn: $txt)
-                                Toggle(localized("Markdown (.md)"), isOn: $md)
-                                Toggle(localized("Word document (.docx)"), isOn: $word)
-                                Toggle(localized("Excel workbook (.xlsx)"), isOn: $excel)
-                                Toggle(localized("PowerPoint presentation (.pptx)"), isOn: $ppt)
-                                Toggle(localized("Show Custom File and preset extensions"), isOn: $customEnabled)
-                                TextField(localized("Preset extensions (comma separated)"), text: $custom).disabled(!customEnabled)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Toggle(localized("Show as submenu"), isOn: $submenu)
+                                    Text(localized("Finder limitation: clicking the New File item itself closes the whole menu. Hover over it to open the submenu. Finder Sync extensions cannot prevent this, even on macOS 26."))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                Text(localized("New File Items"))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 6)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Toggle(localized("Plain Text (.txt)"), isOn: $txt)
+                                    Toggle(localized("Markdown (.md)"), isOn: $md)
+                                    Toggle(localized("Word document (.docx)"), isOn: $word)
+                                    Toggle(localized("Excel workbook (.xlsx)"), isOn: $excel)
+                                    Toggle(localized("PowerPoint presentation (.pptx)"), isOn: $ppt)
+                                    Toggle(localized("Show Custom File and preset extensions"), isOn: $customEnabled)
+                                    TextField(localized("Preset extensions (comma separated)"), text: $custom).disabled(!customEnabled)
+                                }
+                                .padding(.leading, 16)
                             }
                             .padding(.leading, 16)
                             .disabled(!enabled)
@@ -250,11 +339,20 @@ struct ContextMenuSettingsView: View {
             }
             HStack {
                 Button(localized("Restore Default Order")) { order = "" }
-                Button(localized("Restore Default Order and Switch States")) {
+                Button(localized("Restore All")) {
                     order = ""
                     for command in ContextCommand.allCases {
                         SharedSettings.defaults.set(command.defaultEnabled, forKey: command.rawValue)
                     }
+                    icons = true
+                    submenu = false
+                    txt = true
+                    md = true
+                    word = true
+                    excel = true
+                    ppt = true
+                    customEnabled = true
+                    custom = ""
                 }
             }
             Text(localized("Menu items are saved locally. Finder command execution will be available after the Finder extension is installed and enabled.")).font(.caption).foregroundStyle(.secondary)

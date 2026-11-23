@@ -63,7 +63,22 @@ final class FinderExtension: FIFinderSync {
                 add(menu, String(format: SharedSettings.localized("%@ File"), ext.uppercased()), "create:\(ext)", context, icon: "doc.badge.plus")
             }
         }
-        if menu.numberOfItems > start {
+        // Finder closes the whole menu when the submenu's parent item is clicked; extensions cannot prevent it.
+        if menu.numberOfItems > start, SharedSettings.enabled("newFileSubmenu", default: false) {
+            let submenu = NSMenu(title: SharedSettings.localized("New File"))
+            submenu.autoenablesItems = false
+            while menu.numberOfItems > start {
+                let item = menu.item(at: start)!
+                menu.removeItem(at: start)
+                submenu.addItem(item)
+            }
+            let parent = NSMenuItem(title: SharedSettings.localized("New File"), action: nil, keyEquivalent: "")
+            if SharedSettings.enabled("newFileIcons") {
+                parent.image = NSImage(systemSymbolName: "doc.badge.plus", accessibilityDescription: parent.title)
+            }
+            parent.submenu = submenu
+            menu.addItem(parent)
+        } else if menu.numberOfItems > start {
             let heading = NSMenuItem.sectionHeader(title: SharedSettings.localized("New File"))
             heading.isEnabled = false
             menu.insertItem(heading, at: start)

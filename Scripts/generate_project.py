@@ -39,6 +39,17 @@ template_ref=fileref('Resources/Templates','folder')
 app_sources=phase('PBXSourcesBuildPhase',[buildfile(refs[p]) for p in appfiles])
 ext_sources=phase('PBXSourcesBuildPhase',[buildfile(refs[p]) for p in extfiles])
 ext_embed=phase('PBXCopyFilesBuildPhase',[buildfile(ext_product, settings={'ATTRIBUTES':['RemoveHeadersOnCopy']})], dstPath='', dstSubfolderSpec=13, name='Embed App Extensions')
+# Records the git commit in the built Info.plist (GitRevision), with " - dirty" when the tree has uncommitted changes.
+revision_script = r'''set -eu
+PLIST="${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+REV=""
+if command -v git >/dev/null 2>&1 && git -C "${SRCROOT}" rev-parse --git-dir >/dev/null 2>&1; then
+  REV=$(git -C "${SRCROOT}" rev-parse --short HEAD 2>/dev/null || true)
+  if [ -n "$REV" ] && [ -n "$(git -C "${SRCROOT}" status --porcelain 2>/dev/null)" ]; then REV="$REV - dirty"; fi
+fi
+/usr/libexec/PlistBuddy -c "Set :GitRevision \"$REV\"" "$PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :GitRevision string \"$REV\"" "$PLIST"
+'''
+revision_phase=obj(isa='PBXShellScriptBuildPhase',buildActionMask=2147483647,files=[],inputPaths=[],outputPaths=[],runOnlyForDeploymentPostprocessing=0,shellPath='/bin/sh',shellScript=revision_script,name='Record Git Revision',alwaysOutOfDate=1)
 app_resources=phase('PBXResourcesBuildPhase',[buildfile(icon_ref),buildfile(localization_ref),buildfile(template_ref)])
 ext_resources=phase('PBXResourcesBuildPhase',[buildfile(localization_ref)])
 common={'MACOSX_DEPLOYMENT_TARGET':'15.0','SWIFT_VERSION':'6.0','SWIFT_STRICT_CONCURRENCY':'minimal','SDKROOT':'macosx','CODE_SIGN_STYLE':'Automatic','DEVELOPMENT_TEAM':'','ENABLE_APP_SANDBOX':'NO','ALWAYS_SEARCH_USER_PATHS':'NO'}
@@ -47,7 +58,7 @@ ext_cfg=configs({**common,'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu.
 ext_target=obj(isa='PBXNativeTarget',name='RightMouseMenuFinderSync',productName='RightMouseMenuFinderSync',productReference=ext_product,productType='com.apple.product-type.app-extension',buildConfigurationList=ext_cfg,buildPhases=[ext_sources,ext_resources],buildRules=[],dependencies=[])
 proxy=obj(isa='PBXContainerItemProxy',containerPortal='PROJECT',proxyType=1,remoteGlobalIDString=ext_target,remoteInfo='RightMouseMenuFinderSync')
 dep=obj(isa='PBXTargetDependency',target=ext_target,targetProxy=proxy)
-app_target=obj(isa='PBXNativeTarget',name='RightMouseMenu',productName='RightMouseMenu',productReference=app_product,productType='com.apple.product-type.application',buildConfigurationList=app_cfg,buildPhases=[app_sources,app_resources,ext_embed],buildRules=[],dependencies=[dep])
+app_target=obj(isa='PBXNativeTarget',name='RightMouseMenu',productName='RightMouseMenu',productReference=app_product,productType='com.apple.product-type.application',buildConfigurationList=app_cfg,buildPhases=[app_sources,app_resources,ext_embed,revision_phase],buildRules=[],dependencies=[dep])
 project_cfg=configs({'MACOSX_DEPLOYMENT_TARGET':'15.0','SDKROOT':'macosx','SWIFT_VERSION':'6.0'})
 products=obj(isa='PBXGroup',children=[app_product,ext_product],name='Products',sourceTree='<group>')
 main=obj(isa='PBXGroup',children=list(refs.values())+[icon_ref,localization_ref,template_ref,products],sourceTree='<group>')
