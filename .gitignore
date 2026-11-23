@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# SwiftPM and Xcode build output
+.build/
+.swiftpm/
+DerivedData/
+build/
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+
+# Xcode user settings
+xcuserdata/
+*.xcuserstate
+
+# Python script caches
+__pycache__/
+*.pyc

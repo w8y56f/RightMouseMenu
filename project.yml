@@ -1,0 +1,44 @@
+name: RightMouseMenu
+options:
+  bundleIdPrefix: com.stone
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: '15.0'
+    SWIFT_VERSION: '6.0'
+    SWIFT_STRICT_CONCURRENCY: minimal
+    CODE_SIGN_STYLE: Automatic
+targets:
+  RightMouseMenu:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/RightMouseMenu
+      - Sources/Shared
+      - Resources/zh-Hans.lproj
+      - path: Resources/Templates
+        type: folder
+      - RightMouseMenu.icns
+    dependencies:
+      - target: RightMouseMenuFinderSync
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stone.rightmousemenu
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Config/App-Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: RightMouseMenu
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_ENTITLEMENTS: Config/App.entitlements
+  RightMouseMenuFinderSync:
+    type: app-extension
+    platform: macOS
+    sources: [Sources/FinderExtension, Sources/Shared, Resources/zh-Hans.lproj]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stone.rightmousemenu.findersync
+        INFOPLIST_FILE: Config/FinderExtension-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Config/Extension.entitlements
+        ENABLE_APP_SANDBOX: YES
+        SKIP_INSTALL: YES

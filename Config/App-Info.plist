@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+<key>CFBundleIconFile</key><string>RightMouseMenu.icns</string>
+<key>NSAppleEventsUsageDescription</key>
+<string>RightMouseMenu shows file information in Finder and opens terminals in the folder you choose.</string>
+</dict></plist>

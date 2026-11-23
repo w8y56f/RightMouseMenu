@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+<key>CFBundleName</key><string>RightMouseMenu Finder Extension</string>
+<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundlePackageType</key><string>XPC!</string>
+<key>CFBundleDisplayName</key><string>RightMouseMenu</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>NSExtension</key><dict><key>NSExtensionPointIdentifier</key><string>com.apple.FinderSync</string><key>NSExtensionPrincipalClass</key><string>$(PRODUCT_MODULE_NAME).FinderExtension</string></dict>
+</dict></plist>
