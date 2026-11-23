@@ -31,6 +31,11 @@ targets:
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         CODE_SIGN_ENTITLEMENTS: Config/App.entitlements
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.stone.rightmousemenu.dev
+          INFOPLIST_KEY_CFBundleDisplayName: RightMouseMenu Dev
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEV
   RightMouseMenuFinderSync:
     type: app-extension
     platform: macOS
@@ -42,3 +47,10 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Config/Extension.entitlements
         ENABLE_APP_SANDBOX: YES
         SKIP_INSTALL: YES
+        RMM_DISPLAY_NAME: RightMouseMenu
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.stone.rightmousemenu.dev.findersync
+          CODE_SIGN_ENTITLEMENTS: Config/Extension-Dev.entitlements
+          RMM_DISPLAY_NAME: RightMouseMenu Dev
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEV

@@ -57,6 +57,13 @@ struct RightMouseMenuApp: App {
     @Environment(\.openWindow) private var openWindow
     @AppStorage("language", store: SharedSettings.defaults) private var language = "System"
 
+    static let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "RightMouseMenu"
+    #if DEV
+    private static let menuBarIcon = "hammer.circle"
+    #else
+    private static let menuBarIcon = "contextualmenu.and.cursorarrow"
+    #endif
+
     var body: some Scene {
         Window("RightMouseMenu", id: "settings") {
             SettingsRootView(language: $language)
@@ -64,7 +71,7 @@ struct RightMouseMenuApp: App {
         }
         .windowResizability(.contentSize)
 
-        MenuBarExtra("RightMouseMenu", systemImage: "contextualmenu.and.cursorarrow") {
+        MenuBarExtra(Self.displayName, systemImage: Self.menuBarIcon) {
             Button(SharedSettings.localized("Open Settings…", language: language)) {
                 openWindow(id: "settings")
                 NSApp.activate()

@@ -1,8 +1,17 @@
 import Foundation
 
 public enum SharedSettings {
+    // The Debug build (DEV) uses its own suite and request folder so it never interferes with an installed copy.
+    // Both names must match the sandbox exceptions in Config/Extension*.entitlements.
+    #if DEV
+    static let suiteName = "com.stone.RightMouseMenu.dev.shared"
+    static let supportFolderName = "RightMouseMenu Dev"
+    #else
     // Keep the existing preferences suite when the app bundle identifier changes.
-    nonisolated(unsafe) public static let defaults = UserDefaults(suiteName: "com.stone.RightMouseMenu.shared") ?? .standard
+    static let suiteName = "com.stone.RightMouseMenu.shared"
+    static let supportFolderName = "RightMouseMenu"
+    #endif
+    nonisolated(unsafe) public static let defaults = UserDefaults(suiteName: suiteName) ?? .standard
     public static func enabled(_ key: String, default fallback: Bool = true) -> Bool {
         defaults.object(forKey: key) == nil ? fallback : defaults.bool(forKey: key)
     }
@@ -101,7 +110,7 @@ struct FinderRequest: Codable {
             throw CocoaError(.fileNoSuchFile)
         }
         return URL(fileURLWithFileSystemRepresentation: home, isDirectory: true, relativeTo: nil)
-            .appending(path: "Library/Application Support/RightMouseMenu/FinderRequests", directoryHint: .isDirectory)
+            .appending(path: "Library/Application Support/\(SharedSettings.supportFolderName)/FinderRequests", directoryHint: .isDirectory)
     }
 
     static func prepareFolder() throws {

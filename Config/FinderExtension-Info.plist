@@ -5,7 +5,7 @@
 <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
 <key>CFBundleShortVersionString</key><string>0.1.0</string>
 <key>CFBundlePackageType</key><string>XPC!</string>
-<key>CFBundleDisplayName</key><string>RightMouseMenu</string>
+<key>CFBundleDisplayName</key><string>$(RMM_DISPLAY_NAME)</string>
 <key>CFBundleVersion</key><string>1</string>
 <key>NSExtension</key><dict><key>NSExtensionPointIdentifier</key><string>com.apple.FinderSync</string><key>NSExtensionPrincipalClass</key><string>$(PRODUCT_MODULE_NAME).FinderExtension</string></dict>
 </dict></plist>

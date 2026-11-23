@@ -88,7 +88,7 @@ struct SettingsRootView: View {
     private var about: some View {
         VStack(alignment: .leading, spacing: 12) {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 88, height: 88)
-            Text(localized("RightMouseMenu")).font(.largeTitle.bold())
+            Text(RightMouseMenuApp.displayName).font(.largeTitle.bold())
             Text(String(format: localized("Version %@"), versionDescription)).foregroundStyle(.secondary)
             Text(localized("Powered by Stone Wang")).padding(.top, 8)
             Spacer()
@@ -168,10 +168,6 @@ struct SettingsRootView: View {
                         automationState(for: target)
                     }
                 }
-                HStack {
-                    Spacer()
-                    Button(localized("Open Automation Settings")) { openPrivacySettings("Automation") }
-                }
             } header: {
                 Text(localized("Automation"))
             } footer: {
@@ -201,7 +197,11 @@ struct SettingsRootView: View {
         case noErr:
             Label(localized("Allowed"), systemImage: "checkmark.circle.fill").foregroundStyle(.green)
         case OSStatus(errAEEventNotPermitted):
-            Label(localized("Denied"), systemImage: "xmark.circle.fill").foregroundStyle(.red)
+            // macOS will not ask again after a denial; it can only be changed in System Settings.
+            HStack {
+                Label(localized("Denied"), systemImage: "xmark.circle.fill").foregroundStyle(.red)
+                Button(localized("Open Automation Settings")) { openPrivacySettings("Automation") }
+            }
         case OSStatus(procNotFound):
             // macOS can only check or ask while the target app is running.
             Text(localized("Asks on first use")).foregroundStyle(.secondary)

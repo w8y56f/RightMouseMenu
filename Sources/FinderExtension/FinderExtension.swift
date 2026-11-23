@@ -3,7 +3,7 @@ import FinderSync
 import OSLog
 
 final class FinderExtension: FIFinderSync {
-    private let logger = Logger(subsystem: "com.stone.rightmousemenu", category: "FinderExtension")
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.stone.rightmousemenu", category: "FinderExtension")
     private var menuRequests: [FinderRequest] = []
 
     override init() {

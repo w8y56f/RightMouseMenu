@@ -28,7 +28,18 @@ git log origin/main..HEAD --oneline   # unpushed commits
 - If the user asks for a different version, update it in **both** targets in `generate_project.py` (app and
   extension) and in `project.yml`, run `python3 Scripts/generate_project.py`, then commit and push (step 1 again,
   with approval) before building.
-- Check the tag is free: `gh release view v<version>`. If it exists, stop and ask.
+- Check whether the version already exists on GitHub:
+  `gh release view v<version>` and `git ls-remote --tags origin v<version>`.
+- If either exists, show the user what is there (release title, publish date, the commit the tag points to, attached
+  files) and **ask whether to overwrite it**. Do not overwrite without an explicit yes.
+  - **Yes**: delete the old release and tag, then continue with step 3 and publish as a fresh release on the current
+    commit:
+    ```sh
+    gh release delete v<version> --cleanup-tag --yes   # removes the release and the remote tag
+    git push origin :refs/tags/v<version>              # only if a tag remains without a release
+    git tag -d v<version>                              # local tag, if present
+    ```
+  - **No**: stop, and suggest bumping the version instead (see above).
 
 ## 3. Build the DMG
 

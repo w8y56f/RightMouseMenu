@@ -20,10 +20,11 @@ def buildfile(ref, **kwargs):
 def phase(kind, files, **kwargs):
     return obj(isa=kind, buildActionMask=2147483647, files=files, runOnlyForDeploymentPostprocessing=0, **kwargs)
 
-def configs(settings):
+def configs(settings, debug=None, release=None):
     ids=[]
+    overrides={'Debug':debug or {},'Release':release or {}}
     for name in ['Debug','Release']:
-        d=dict(settings)
+        d={**settings, **overrides[name]}
         d['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone' if name == 'Debug' else '-O'
         ids.append(obj(isa='XCBuildConfiguration', name=name, buildSettings=d))
     return obj(isa='XCConfigurationList', buildConfigurations=ids, defaultConfigurationIsVisible=0, defaultConfigurationName='Debug')
@@ -53,8 +54,11 @@ revision_phase=obj(isa='PBXShellScriptBuildPhase',buildActionMask=2147483647,fil
 app_resources=phase('PBXResourcesBuildPhase',[buildfile(icon_ref),buildfile(localization_ref),buildfile(template_ref)])
 ext_resources=phase('PBXResourcesBuildPhase',[buildfile(localization_ref)])
 common={'MACOSX_DEPLOYMENT_TARGET':'15.0','SWIFT_VERSION':'6.0','SWIFT_STRICT_CONCURRENCY':'minimal','SDKROOT':'macosx','CODE_SIGN_STYLE':'Automatic','DEVELOPMENT_TEAM':'','ENABLE_APP_SANDBOX':'NO','ALWAYS_SEARCH_USER_PATHS':'NO'}
-app_cfg=configs({**common,'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu','PRODUCT_NAME':'RightMouseMenu','GENERATE_INFOPLIST_FILE':'YES','INFOPLIST_FILE':'Config/App-Info.plist','INFOPLIST_KEY_CFBundleDisplayName':'RightMouseMenu','INFOPLIST_KEY_CFBundleIconFile':'RightMouseMenu.icns','INFOPLIST_KEY_NSAppleEventsUsageDescription':'RightMouseMenu shows file information in Finder and opens terminals in the folder you choose.','INFOPLIST_KEY_LSApplicationCategoryType':'public.app-category.utilities','MARKETING_VERSION':'0.1.0','CURRENT_PROJECT_VERSION':'1','CODE_SIGN_ENTITLEMENTS':'Config/App.entitlements','SWIFT_EMIT_LOC_STRINGS':'YES'})
-ext_cfg=configs({**common,'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu.findersync','PRODUCT_NAME':'RightMouseMenuFinderSync','INFOPLIST_FILE':'Config/FinderExtension-Info.plist','CODE_SIGN_ENTITLEMENTS':'Config/Extension.entitlements','ENABLE_APP_SANDBOX':'YES','SKIP_INSTALL':'YES','MARKETING_VERSION':'0.1.0','CURRENT_PROJECT_VERSION':'1'})
+app_cfg=configs({**common,'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu','PRODUCT_NAME':'RightMouseMenu','GENERATE_INFOPLIST_FILE':'YES','INFOPLIST_FILE':'Config/App-Info.plist','INFOPLIST_KEY_CFBundleDisplayName':'RightMouseMenu','INFOPLIST_KEY_CFBundleIconFile':'RightMouseMenu.icns','INFOPLIST_KEY_NSAppleEventsUsageDescription':'RightMouseMenu shows file information in Finder and opens terminals in the folder you choose.','INFOPLIST_KEY_LSApplicationCategoryType':'public.app-category.utilities','MARKETING_VERSION':'0.1.0','CURRENT_PROJECT_VERSION':'1','CODE_SIGN_ENTITLEMENTS':'Config/App.entitlements','SWIFT_EMIT_LOC_STRINGS':'YES'},
+    # The Debug build is a separate app (".dev") so it never shares permissions, settings or the extension with an installed copy.
+    debug={'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu.dev','INFOPLIST_KEY_CFBundleDisplayName':'RightMouseMenu Dev','SWIFT_ACTIVE_COMPILATION_CONDITIONS':'DEV'})
+ext_cfg=configs({**common,'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu.findersync','PRODUCT_NAME':'RightMouseMenuFinderSync','INFOPLIST_FILE':'Config/FinderExtension-Info.plist','CODE_SIGN_ENTITLEMENTS':'Config/Extension.entitlements','ENABLE_APP_SANDBOX':'YES','SKIP_INSTALL':'YES','MARKETING_VERSION':'0.1.0','CURRENT_PROJECT_VERSION':'1','RMM_DISPLAY_NAME':'RightMouseMenu'},
+    debug={'PRODUCT_BUNDLE_IDENTIFIER':'com.stone.rightmousemenu.dev.findersync','CODE_SIGN_ENTITLEMENTS':'Config/Extension-Dev.entitlements','RMM_DISPLAY_NAME':'RightMouseMenu Dev','SWIFT_ACTIVE_COMPILATION_CONDITIONS':'DEV'})
 ext_target=obj(isa='PBXNativeTarget',name='RightMouseMenuFinderSync',productName='RightMouseMenuFinderSync',productReference=ext_product,productType='com.apple.product-type.app-extension',buildConfigurationList=ext_cfg,buildPhases=[ext_sources,ext_resources],buildRules=[],dependencies=[])
 proxy=obj(isa='PBXContainerItemProxy',containerPortal='PROJECT',proxyType=1,remoteGlobalIDString=ext_target,remoteInfo='RightMouseMenuFinderSync')
 dep=obj(isa='PBXTargetDependency',target=ext_target,targetProxy=proxy)

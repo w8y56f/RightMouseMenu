@@ -356,7 +356,7 @@ fi
 				<key>ALWAYS_SEARCH_USER_PATHS</key>
 				<string>NO</string>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>com.stone.rightmousemenu</string>
+				<string>com.stone.rightmousemenu.dev</string>
 				<key>PRODUCT_NAME</key>
 				<string>RightMouseMenu</string>
 				<key>GENERATE_INFOPLIST_FILE</key>
@@ -364,7 +364,7 @@ fi
 				<key>INFOPLIST_FILE</key>
 				<string>Config/App-Info.plist</string>
 				<key>INFOPLIST_KEY_CFBundleDisplayName</key>
-				<string>RightMouseMenu</string>
+				<string>RightMouseMenu Dev</string>
 				<key>INFOPLIST_KEY_CFBundleIconFile</key>
 				<string>RightMouseMenu.icns</string>
 				<key>INFOPLIST_KEY_NSAppleEventsUsageDescription</key>
@@ -379,6 +379,8 @@ fi
 				<string>Config/App.entitlements</string>
 				<key>SWIFT_EMIT_LOC_STRINGS</key>
 				<string>YES</string>
+				<key>SWIFT_ACTIVE_COMPILATION_CONDITIONS</key>
+				<string>DEV</string>
 				<key>SWIFT_OPTIMIZATION_LEVEL</key>
 				<string>-Onone</string>
 			</dict>
@@ -474,19 +476,23 @@ fi
 				<key>ALWAYS_SEARCH_USER_PATHS</key>
 				<string>NO</string>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>com.stone.rightmousemenu.findersync</string>
+				<string>com.stone.rightmousemenu.dev.findersync</string>
 				<key>PRODUCT_NAME</key>
 				<string>RightMouseMenuFinderSync</string>
 				<key>INFOPLIST_FILE</key>
 				<string>Config/FinderExtension-Info.plist</string>
 				<key>CODE_SIGN_ENTITLEMENTS</key>
-				<string>Config/Extension.entitlements</string>
+				<string>Config/Extension-Dev.entitlements</string>
 				<key>SKIP_INSTALL</key>
 				<string>YES</string>
 				<key>MARKETING_VERSION</key>
 				<string>0.1.0</string>
 				<key>CURRENT_PROJECT_VERSION</key>
 				<string>1</string>
+				<key>RMM_DISPLAY_NAME</key>
+				<string>RightMouseMenu Dev</string>
+				<key>SWIFT_ACTIVE_COMPILATION_CONDITIONS</key>
+				<string>DEV</string>
 				<key>SWIFT_OPTIMIZATION_LEVEL</key>
 				<string>-Onone</string>
 			</dict>
@@ -529,6 +535,8 @@ fi
 				<string>0.1.0</string>
 				<key>CURRENT_PROJECT_VERSION</key>
 				<string>1</string>
+				<key>RMM_DISPLAY_NAME</key>
+				<string>RightMouseMenu</string>
 				<key>SWIFT_OPTIMIZATION_LEVEL</key>
 				<string>-O</string>
 			</dict>

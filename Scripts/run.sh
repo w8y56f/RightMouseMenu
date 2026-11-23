@@ -4,7 +4,8 @@ cd "$(dirname "$0")/.."
 xcodebuild -quiet -project RightMouseMenu.xcodeproj -scheme RightMouseMenu -configuration Debug -destination "platform=macOS,arch=$(uname -m)" -derivedDataPath .build/DerivedData build
 app="$PWD/.build/DerivedData/Build/Products/Debug/RightMouseMenu.app"
 pluginkit -a "$app/Contents/PlugIns/RightMouseMenuFinderSync.appex"
-if ! pluginkit -m -i com.stone.rightmousemenu.findersync | grep -q 'com.stone.rightmousemenu.findersync'; then
+# Debug builds use the .dev identity, separate from an installed copy.
+if ! pluginkit -m -i com.stone.rightmousemenu.dev.findersync | grep -q 'com.stone.rightmousemenu.dev.findersync'; then
     printf '%s\n' 'macOS did not register the RightMouseMenu Finder extension.' >&2
     exit 1
 fi
